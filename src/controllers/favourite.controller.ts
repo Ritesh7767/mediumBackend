@@ -31,15 +31,15 @@ export const getFavourite = asyncHandler(async (req, res) => {
             where: {
                 userId: req.id
             },
-            include: {
+            select: {
                 post: {
                     select: {
+                        id: true,
                         title: true,
                         content: true,
-                    },
-                    include: {
                         owner: {
                             select: {
+                                id: true,
                                 username: true
                             }
                         }
@@ -64,13 +64,13 @@ export const removeFavourite = asyncHandler(async (req, res) => {
         const removedFavourite = await client.favourites.delete({
             where: {
                 userId_postId: {
-                    userId: id,
-                    postId: req.id
+                    userId: req.id,
+                    postId: id
                 }
             }
         })
     
-        res.json(new ApiResponse(201, removeFavourite, "Removed from favourite"))
+        res.json(new ApiResponse(201, removedFavourite, "Removed from favourite"))
     
     } catch (error) {
         throw new ApiError(400, "Invalid request")

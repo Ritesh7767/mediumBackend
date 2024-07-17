@@ -2,6 +2,7 @@ import ApiError from "../utils/apiError";
 import {Request, Response} from 'express'
 import asyncHandler from "../utils/asyncHandler";
 import { PrismaClient } from "@prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
 import bcrypt from 'bcrypt'
 import ApiResponse from "../utils/apiResponse";
 import jwt from 'jsonwebtoken'
@@ -17,17 +18,21 @@ const generateRefreshToken = ({id}: {id: string}) => {
 
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
 
-    const client = new PrismaClient()
+    const client = new PrismaClient().$extends(withAccelerate())
     const {username, email, password} = req.body
     if([username, email, password].some(ele => ele.trim() == "")) throw new ApiError(401, "Please provide mandatory data") 
     
     const isDataCorrect = registerValidation.safeParse(req.body)
-
     if(!isDataCorrect.success) throw new ApiError(403, "Invalid data provided")
-
+    
     const existingUser = await client.user.findFirst({
         where: {
             OR: [{username}, {email}]
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true
         }
     })
 
@@ -51,9 +56,6 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
             id: true,
             username: true,
             email: true,
-            favourite: true,
-            like: true,
-            comment: true
         }
     })
 
@@ -64,8 +66,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
+    const client = new PrismaClient().$extends(withAccelerate())
     const {email, password} = req.body
-    const client = new PrismaClient()
 
     if([email, password].some(ele => ele.trim() == "")) throw new ApiError(401, "Please provide every mandatory field")
 
@@ -99,4 +101,5 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, user, "User logged in successfully"))
 
 })
+
 

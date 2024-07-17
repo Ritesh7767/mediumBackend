@@ -29,18 +29,39 @@ export const createComment = asyncHandler(async (req, res) => {
 export const getComment = asyncHandler(async (req, res) => {
 
     const client = new PrismaClient()
-    const commentsWithPost = await client.user.findMany({
-        where: {    
-            id: req.id
+    const commentsWithPost = await client.comments.findMany({
+        where: {
+            userId: req.id
         },
         include: {
-            comment: {
-                include: {
-                    post: true
+            post: {
+                select: {
+                    id: true,
+                    title: true,
+                    content: true,
+                    owner: {
+                        select: {
+                            id: true,
+                            username: true
+                        }
+                    },
+                    comment: {
+                        select: {
+                            id: true,
+                            comment: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            },
         }
     })
+
     res.json(new ApiResponse(200, commentsWithPost, "comments"))
 })
 
@@ -54,7 +75,8 @@ export const updateComment = asyncHandler(async (req, res) => {
     
         const updatedComment = await client.comments.update({
             where: {
-                id
+                id,
+                userId: req.id
             },
             data: {
                 comment
@@ -73,12 +95,14 @@ export const deleteComment = asyncHandler(async (req, res) => {
     try {
         const client = new PrismaClient()
         const id = req.query.id as string
+        console.log(id, req.id)
     
         if(!id) throw new ApiError(400, "Invalid request")
     
         const deletedComment = await client.comments.delete({
             where: {
-                id
+                id,
+                userId: req.id
             }
         })
     

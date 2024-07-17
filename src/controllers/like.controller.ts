@@ -9,6 +9,17 @@ export const likePost = asyncHandler(async (req, res) => {
     const id = req.query.id as string
     if(!id) throw new ApiError(400, "Invalid operation")
 
+    const alreadyLiked = await client.likes.findUnique({
+        where: {
+            userId_postId: {
+                userId: req.id,
+                postId: id
+            }
+        }
+    })
+
+    if(alreadyLiked) throw new ApiError(400, "User already liked this post")
+
     const addLike = await client.likes.create({
         data: {
             userId: req.id,
@@ -22,21 +33,17 @@ export const likePost = asyncHandler(async (req, res) => {
 export const getLikedPost = asyncHandler(async (req, res) => {
 
     const client = new PrismaClient()
-    const id = req.query.id as string
-    if(!id) throw new ApiError(400, "Invalid operation")
 
     const getLikedPost = await client.likes.findMany({
         where: {
             userId: req.id
         },
-        include: {
+        select: {
             post: {
                 select: {
                     id: true,
                     title: true,
-                    content: true
-                },
-                include: {
+                    content: true,
                     owner: {
                         select: {
                             id: true,
