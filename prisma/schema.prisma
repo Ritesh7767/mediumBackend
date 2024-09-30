@@ -8,16 +8,44 @@ datasource db {
 }
 
 model User {
-  id             String       @id @default(uuid())
-  username       String       @unique
-  email          String       @unique
+  id             String          @id @default(uuid())
+  username       String          @unique
+  email          String          @unique
   password       String
   post           Post[]
   favourite      Favourites[]
   comment        Comments[]
   like           Likes[]
-  refreshToken   String?      @unique
-  blacklistToken String[]     @unique
+  follower       Followers[]
+  followRequest  FollowRequest[] @relation("User")
+  requestedUser  FollowRequest[] @relation("RequestedUser")
+  refreshToken   String?         @unique
+  blacklistToken String[]        @unique
+}
+
+model Followers {
+  id         String @id @default(uuid())
+  userId     String
+  followerId String
+  follower   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, followerId])
+}
+
+enum Status {
+  pending
+  accepted
+  rejected
+}
+
+model FollowRequest {
+  userId        String
+  requestedId   String
+  status        Status @default(pending)
+  user          User   @relation("User", fields: [userId], references: [id])
+  requestedUser User   @relation("RequestedUser", fields: [requestedId], references: [id])
+
+  @@unique([userId, requestedId])
 }
 
 model Post {

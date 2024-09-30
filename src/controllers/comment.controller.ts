@@ -33,7 +33,7 @@ export const getComment = asyncHandler(async (req, res) => {
         where: {
             userId: req.id
         },
-        include: {
+        select: {
             post: {
                 select: {
                     id: true,
@@ -45,20 +45,9 @@ export const getComment = asyncHandler(async (req, res) => {
                             username: true
                         }
                     },
-                    comment: {
-                        select: {
-                            id: true,
-                            comment: true,
-                            user: {
-                                select: {
-                                    id: true,
-                                    username: true
-                                }
-                            }
-                        }
-                    }
+                    comment: true
                 }
-            },
+            }
         }
     })
 

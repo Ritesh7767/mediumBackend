@@ -25,6 +25,9 @@ app.use('/api/v1/favourite', favouriteRouter)
 import likeRouter from './routers/like.router'
 app.use('/api/v1/like', likeRouter)
 
+import followerRouter from './routers/follower.router'
+app.use('/api/v1/follower', followerRouter)
+
 // app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 //     if(err instanceof ApiError){
 //         res.json({

@@ -82,9 +82,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
             id: true, 
             username: true,
             email: true,
-            favourite: true,
-            like: true,
-            comment: true
         }
     })
 
